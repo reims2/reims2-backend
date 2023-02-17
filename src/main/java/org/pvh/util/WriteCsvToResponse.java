@@ -64,7 +64,10 @@ public class WriteCsvToResponse {
         rowList.add(glass.isDispensed() ? "true" : "false");
         rowList.add(glass.isDispensed() ? glass.getDispense().getPreviousSku().toString() : "-");
         rowList.add(glass.isDispensed() ? df.format(glass.getDispense().getModifyDate()) : "-");
-        rowList.add(glass.isDispensed() ? glass.getDispense().getDispenseReason().toString() : "-");
+        if (glass.isDispensed() && glass.getDispense().getDispenseReason() != null)
+            rowList.add(glass.getDispense().getDispenseReason().toString());
+        else
+            rowList.add("-");
 
         for (Eye eye : new Eye[] {glass.getOd(), glass.getOs()}) {
             rowList.add(eye.getSphere().toString());
