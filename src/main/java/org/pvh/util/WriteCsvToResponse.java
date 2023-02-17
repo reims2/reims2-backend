@@ -38,6 +38,7 @@ public class WriteCsvToResponse {
                 "Is dispensed?",
                 "SKU before dispension",
                 "dispension date (in CST)",
+                "dispense type",
                 "OD Sphere", "OD Cylinder", "OD Axis", "OD Add",
                 "OS Sphere", "OS Cylinder", "OS Axis", "OS Add"});
 
@@ -63,6 +64,7 @@ public class WriteCsvToResponse {
         rowList.add(glass.isDispensed() ? "true" : "false");
         rowList.add(glass.isDispensed() ? glass.getDispense().getPreviousSku().toString() : "-");
         rowList.add(glass.isDispensed() ? df.format(glass.getDispense().getModifyDate()) : "-");
+        rowList.add(glass.isDispensed() ? glass.getDispense().getDispenseReason().toString() : "-");
 
         for (Eye eye : new Eye[] {glass.getOd(), glass.getOs()}) {
             rowList.add(eye.getSphere().toString());

@@ -8,6 +8,7 @@ import org.pvh.error.PVHException;
 import org.pvh.model.dto.GlassesRequestDTO;
 import org.pvh.model.dto.GlassesResponseDTO;
 import org.pvh.model.entity.Glasses;
+import org.pvh.model.enums.DispenseReasonEnum;
 import org.pvh.model.mapper.GlassesMapperImpl;
 import org.pvh.repository.RSQL.CustomRsqlVisitor;
 import org.pvh.service.MainService;
@@ -207,7 +208,7 @@ public class GlassesRestController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PutMapping(path = "/dispense/{location}/{sku}", produces = "application/json")
-    public ResponseEntity<GlassesResponseDTO> updateDispensed(@PathVariable("sku") int sku, @PathVariable("location") String location) {
+    public ResponseEntity<GlassesResponseDTO> updateDispensed(@PathVariable("sku") int sku, @PathVariable("location") String location, @RequestParam Optional<DispenseReasonEnum> reason) {
         Optional<Glasses> currentGlasses;
         currentGlasses = this.mainService.findAllBySkuAndLocation(sku, location);
 
@@ -222,6 +223,9 @@ public class GlassesRestController {
         currentGlasses.get().setDispensed(true);
         currentGlasses.get().getDispense().setModifyDate(new Date());
         currentGlasses.get().getDispense().setPreviousSku(currentGlasses.get().getSku());
+        if (reason.isPresent()) currentGlasses.get().getDispense().setDispenseReason(reason.get());
+        else currentGlasses.get().getDispense().setDispenseReason(DispenseReasonEnum.DISPENSED);
+        
         currentGlasses.get().setSku(null);
 
         this.mainService.saveGlassesAfterDispense(currentGlasses.get());
@@ -260,7 +264,7 @@ public class GlassesRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/{location}/{sku}", produces = "application/json")
     @Transactional
     public ResponseEntity<Void> deleteGlasses(@PathVariable("sku") int sku, @PathVariable("location") String location) {
@@ -269,7 +273,7 @@ public class GlassesRestController {
             throw new PVHException(ENTITY_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
         this.mainService.deleteGlasses(glasses.get());
-        logger.info("Deleted glasses with SKU {} (in {})", sku, location);
+        logger.info("Completely deleted glasses with SKU {} (in {})", sku, location);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
