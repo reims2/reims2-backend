@@ -208,7 +208,8 @@ public class GlassesRestController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PutMapping(path = "/dispense/{location}/{sku}", produces = "application/json")
-    public ResponseEntity<GlassesResponseDTO> updateDispensed(@PathVariable("sku") int sku, @PathVariable("location") String location, @RequestParam Optional<DispenseReasonEnum> reason) {
+    public ResponseEntity<GlassesResponseDTO> updateDispensed(@PathVariable("sku") int sku, @PathVariable("location") String location,
+            @RequestParam Optional<DispenseReasonEnum> reason) {
         Optional<Glasses> currentGlasses;
         currentGlasses = this.mainService.findAllBySkuAndLocation(sku, location);
 
@@ -223,13 +224,16 @@ public class GlassesRestController {
         currentGlasses.get().setDispensed(true);
         currentGlasses.get().getDispense().setModifyDate(new Date());
         currentGlasses.get().getDispense().setPreviousSku(currentGlasses.get().getSku());
-        if (reason.isPresent()) currentGlasses.get().getDispense().setDispenseReason(reason.get());
-        else currentGlasses.get().getDispense().setDispenseReason(DispenseReasonEnum.DISPENSED);
-        
+        if (reason.isPresent())
+            currentGlasses.get().getDispense().setDispenseReason(reason.get());
+        else
+            currentGlasses.get().getDispense().setDispenseReason(DispenseReasonEnum.DISPENSED);
+
         currentGlasses.get().setSku(null);
 
         this.mainService.saveGlassesAfterDispense(currentGlasses.get());
-        logger.info("Dispensed glasses with SKU {} (in {})", sku, location);
+        logger.info("Dispensed glasses with SKU {} (in {}) with reason {}", sku, location,
+                currentGlasses.get().getDispense().getDispenseReason());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
