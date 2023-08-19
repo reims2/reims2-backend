@@ -3,23 +3,24 @@ name: ci
 on:
   push:
     branches:
-      - main
-      - dev
+      - "**"
     tags: ["v*.*.*"]
   pull_request:
+    types:
+      - "opened"
+      - "synchronize"
+      - "reopened"
+      - "labeled"
   merge_group:
-
-env:
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  workflow_dispatch:
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
+    if: ${{ github.event.action != 'labeled' }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
-      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3
+      - uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3
         with:
           cache: maven
           distribution: adopt
@@ -34,48 +35,34 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@d682d5d68a398c90e9b35f8c564cd8e1918d6a24 # v3
 
   docker:
-    # Only start publish after successful build & test on main branch
-    needs: ci
-    concurrency: ci-${{ github.ref }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
-      - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@6a58db7e0d21ca03e6c44877909e80e45217eed2 # v2
+    uses: reims2/actions/.github/workflows/docker.yml@main
+    concurrency: docker-backend-${{ github.ref }}
+    if: ${{ github.event_name != 'merge_group' && github.event.action != 'labeled' }}
+    secrets: inherit # pass all secrets
 
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into Docker registry
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  deploy:
+    needs:
+      - docker
+      - ci # since we don"t execute tests in docker build
+    if: github.ref == 'refs/heads/main'
+    uses: reims2/actions/.github/workflows/deploy.yml@main
+    concurrency: deploy-${{ github.repository }}
+    secrets: inherit # pass all secrets
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@2c0bd771b40637d97bf205cbccdd294a32112176 # v4
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-            # set latest tag for default branch
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha
+  dev-deploy:
+    needs:
+      - docker
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/dev'
+    uses: reims2/actions/.github/workflows/dev-deploy.yml@main
+    concurrency: dev-deploy-${{ github.repository }}
+    secrets: inherit # pass all secrets
 
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@44ea916f6c540f9302d50c2b1e5a8dc071f15cdf # v4
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  pr-deploy:
+    needs:
+      - docker
+    if: ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'deploy')) }}
+    uses: reims2/actions/.github/workflows/deploy-instance.yml@main
+    concurrency: pr-deploy-backend-${{ github.ref }}
+    with:
+      instance_name: backend-pr-${{ github.event.number || 'unknown' }}
+    secrets: inherit # pass all secrets
