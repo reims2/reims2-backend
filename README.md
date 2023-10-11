@@ -18,6 +18,8 @@ http://localhost:9966/api/glasses
 
 http://localhost:9966/v3/api-docs
 
+http://localhost:9966/swagger-ui/index.html
+
 # Security
 
 Secured by JWT. How to deal with it?
