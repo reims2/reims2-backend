@@ -239,7 +239,7 @@ public class GlassesRestControllerIntegrationTest {
                 .content(
                         objectMapper.writeValueAsBytes(failGlassesToUpdate)))
                 .andExpect(status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andDo(print());
     }
 
