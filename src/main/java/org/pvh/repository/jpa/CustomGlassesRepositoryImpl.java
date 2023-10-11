@@ -5,9 +5,10 @@ import org.pvh.model.entity.Glasses;
 import org.pvh.repository.CustomGlassesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.Query;
+
 import java.math.BigInteger;
 import java.util.Date;
 

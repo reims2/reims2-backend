@@ -1,9 +1,10 @@
 package org.pvh.model.dto;
 
-import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
+
+import jakarta.validation.constraints.Pattern;
 
 /**
  * A DTO for the {@link org.pvh.model.entity.Glasses} entity

@@ -1,6 +1,12 @@
 package org.pvh.model.dto;
 
-import javax.validation.constraints.Pattern;
+
+import org.pvh.model.enums.GlassesSizeEnum;
+import org.pvh.model.enums.GlassesTypeEnum;
+// import org.pvh.model.validator.IEnumValidator;
+
+import jakarta.validation.constraints.Pattern;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -8,7 +14,11 @@ import java.util.Objects;
  * A DTO for the {@link org.pvh.model.entity.Glasses} entity
  */
 public class GlassesRequestDTO implements Serializable {
+    // @Pattern(regexp = "single|multifocal")
+    // @IEnumValidator(targetClassType=GlassesTypeEnum.class, message="Does not match Glasses")
     private String glassesType;
+    // @Pattern(regexp = "large|medium|small|child")
+    // @IEnumValidator(targetClassType=GlassesSizeEnum.class, message="Does not match Glasses")
     private String glassesSize;
     private String appearance;
     @Pattern(regexp = "sm|sa")
