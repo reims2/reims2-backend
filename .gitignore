@@ -32,6 +32,8 @@ local.properties
 # Java annotation processor (APT)
 .factorypath
 
+.vscode
+
 # PDT-specific (PHP Development Tools)
 .buildpath
 
@@ -216,7 +218,6 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-
 # Eclipse m2e generated files
 # Eclipse Core
 .project

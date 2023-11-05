@@ -41,4 +41,5 @@ public interface MainService {
 
     List<Glasses> findAllByLocationAndNotDispensed(String location);
 
+    List<Glasses> findAllAndNotDispensed();
 }
