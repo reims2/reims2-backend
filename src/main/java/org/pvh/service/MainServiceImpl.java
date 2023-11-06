@@ -7,9 +7,11 @@ import java.util.Optional;
 import org.pvh.error.NoSkusLeftException;
 import org.pvh.model.entity.Dispense;
 import org.pvh.model.entity.Glasses;
+import org.pvh.model.entity.UnsuccessfulSearch;
 import org.pvh.repository.DispenseRepository;
 import org.pvh.repository.EyeRepository;
 import org.pvh.repository.GlassesRepository;
+import org.pvh.repository.UnsuccessfulSearchRepository;
 import org.pvh.util.GlassesSpecs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -27,12 +29,14 @@ public class MainServiceImpl implements MainService {
     private GlassesRepository glassesRepository;
     private EyeRepository eyeRepository;
     private DispenseRepository dispenseRepository;
+    private UnsuccessfulSearchRepository unsuccessfulSearchRepository;
 
     @Autowired
-    public MainServiceImpl(GlassesRepository glassesRepository, EyeRepository eyeRepository, DispenseRepository dispenseRepository) {
+    public MainServiceImpl(GlassesRepository glassesRepository, EyeRepository eyeRepository, DispenseRepository dispenseRepository, UnsuccessfulSearchRepository unsuccessfulSearchRepository) {
         this.glassesRepository = glassesRepository;
         this.eyeRepository = eyeRepository;
         this.dispenseRepository = dispenseRepository;
+        this.unsuccessfulSearchRepository = unsuccessfulSearchRepository;
     }
 
     @Override
@@ -146,6 +150,11 @@ public class MainServiceImpl implements MainService {
     @Override
     public List<Glasses> findAllAndNotDispensed() {
         return glassesRepository.findAll(Specification.where(GlassesSpecs.isDispensed(false)));
+    }
+
+    @Override
+    public UnsuccessfulSearch saveUnsuccessfulSearch(UnsuccessfulSearch search) {
+        return unsuccessfulSearchRepository.save(search);
     }
 
 }

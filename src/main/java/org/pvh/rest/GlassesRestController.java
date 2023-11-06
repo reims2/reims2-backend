@@ -18,9 +18,12 @@ import org.pvh.error.PVHException;
 import org.pvh.model.dto.ChangeValueDTO;
 import org.pvh.model.dto.GlassesRequestDTO;
 import org.pvh.model.dto.GlassesResponseDTO;
+import org.pvh.model.dto.UnsuccessfulSearchDTO;
 import org.pvh.model.entity.Glasses;
+import org.pvh.model.entity.UnsuccessfulSearch;
 import org.pvh.model.enums.DispenseReasonEnum;
 import org.pvh.model.mapper.GlassesMapperImpl;
+import org.pvh.model.mapper.UnsuccessfulSearchMapperImpl;
 import org.pvh.repository.RSQL.CustomRsqlVisitor;
 import org.pvh.service.ChangeService;
 import org.pvh.service.MainService;
@@ -323,5 +326,26 @@ public class GlassesRestController {
         changeService.setNewHashValue();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    // Weiterbauen POST und GET/ Delete Endpoint
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PostMapping(path = "/unsuccessfulSearch", produces = "application/json")
+    public ResponseEntity<Void> addUnsuccessfulSearch(@RequestBody @Valid UnsuccessfulSearchDTO unsuccessfulSearchDTO, UriComponentsBuilder ucBuilder) {
+        UnsuccessfulSearch searchResponse;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            if (unsuccessfulSearchDTO == null) {
+                return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
+            }
+            UnsuccessfulSearch search = UnsuccessfulSearchMapperImpl.getInstance().unsuccessfulSearchDTOToUnsuccessfulSearch(unsuccessfulSearchDTO);
+            searchResponse = this.mainService.saveUnsuccessfulSearch(search);
+        } catch (RuntimeException e) {
+            throw new PVHException("Something bad happened while adding unsuccessful search.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        changeService.setNewHashValue();
+        logger.info("Added new unsuccessful search with following Attributes: {}", searchResponse.toString());
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 
 }
