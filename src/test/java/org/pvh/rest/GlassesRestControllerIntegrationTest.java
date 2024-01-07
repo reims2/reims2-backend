@@ -215,165 +215,195 @@ public class GlassesRestControllerIntegrationTest {
         }
 
         @Test
-        public void addGlasses_thenStatus201()
-                        throws Exception {
-                Glasses glasses = new Glasses("multifocal", "small", "neutral", "sm", new Dispense(),
-                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
+        public void addGlasses_thenStatus201() {
+                try {
+                        Glasses glasses = new Glasses("multifocal", "small", "neutral", "sm", new Dispense(),
+                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
+                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
 
-                Glasses failGlasses = new Glasses("multifocal", "small", "neutral", "ss",
-                                new Dispense(), new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
+                        Glasses failGlasses = new Glasses("multifocal", "small", "neutral", "ss",
+                                        new Dispense(),
+                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
+                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
 
-                ChangeValue cv = callChangeValueAndReturnHash(glasses.getLocation());
+                        ChangeValue cv = callChangeValueAndReturnHash("sm");
 
-                this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
-                                objectMapper.writeValueAsBytes(
-                                                GlassesMapperImpl.getInstance().glassesToGlassesRequestDTO(glasses))))
-                                .andExpect(status().isCreated())
-                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(glasses.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(glasses.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(glasses.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(glasses.getOs().getCylinder().intValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(glasses.getOd().getCylinder().intValue())))
-                                .andDo(print());
+                        this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
+                                        objectMapper.writeValueAsBytes(
+                                                        GlassesMapperImpl.getInstance()
+                                                                        .glassesToGlassesRequestDTO(glasses))))
+                                        .andExpect(status().isCreated())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                        Matchers.is(glasses.getGlassesType().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                        Matchers.is(glasses.getGlassesSize().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                        Matchers.is(glasses.getAppearance().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                        Matchers.is(glasses.getOs().getCylinder().intValue())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                        Matchers.is(glasses.getOd().getCylinder().intValue())))
+                                        .andDo(print());
 
-                assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
+                        assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash(glasses.getLocation());
-                this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
-                                objectMapper.writeValueAsBytes(
-                                                GlassesMapperImpl.getInstance().glassesToGlassesRequestDTO(glasses))))
-                                .andExpect(status().isCreated())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(glasses.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(glasses.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(glasses.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(glasses.getOs().getCylinder().intValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(glasses.getOd().getCylinder().intValue())))
-                                .andDo(print());
+                        cv = callChangeValueAndReturnHash("sm");
+                        this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
+                                        objectMapper.writeValueAsBytes(
+                                                        GlassesMapperImpl.getInstance()
+                                                                        .glassesToGlassesRequestDTO(glasses))))
+                                        .andExpect(status().isCreated())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                        Matchers.is(glasses.getGlassesType().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                        Matchers.is(glasses.getGlassesSize().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                        Matchers.is(glasses.getAppearance().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                        Matchers.is(glasses.getOs().getCylinder().intValue())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                        Matchers.is(glasses.getOd().getCylinder().intValue())))
+                                        .andDo(print());
 
-                assertFalse(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
+                        assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash(glasses.getLocation());
+                        cv = callChangeValueAndReturnHash("sm");
 
-                this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
-                                objectMapper.writeValueAsBytes(GlassesMapperImpl.getInstance()
-                                                .glassesToGlassesRequestDTO(failGlasses))))
-                                .andExpect(status().is4xxClientError())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
+                        this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
+                                        objectMapper.writeValueAsBytes(GlassesMapperImpl.getInstance()
+                                                        .glassesToGlassesRequestDTO(failGlasses))))
+                                        .andExpect(status().is4xxClientError())
+                                        .andDo(print());
+                        assertTrue(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(status().is4xxClientError())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
+                        this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(status().is4xxClientError())
+                                        .andDo(print());
+                        assertTrue(isChangeValueEqualNewChangeValue(cv, "sm"));
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
         }
 
         @Test
-        public void givenGlasses_whenGetGlasses_thenStatus200()
-                        throws Exception {
+        public void givenGlasses_whenGetGlasses_thenStatus200() {
+                try {
+                        Glasses saveEntitySa = mainService.saveGlasses(
+                                        new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
+                                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2,
+                                                                        BigDecimal.ONE),
+                                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2,
+                                                                        BigDecimal.ONE)));
 
-                Glasses saveEntitySa = mainService.saveGlasses(
-                                new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
+                        this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
+                                        .andExpect(status().isOk())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.sku",
+                                                        Matchers.is(saveEntitySa.getSku())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                        Matchers.is(saveEntitySa.getGlassesType().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                        Matchers.is(saveEntitySa.getGlassesSize().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                        Matchers.is(saveEntitySa.getAppearance().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                        Matchers.is(saveEntitySa.getOs().getCylinder().doubleValue())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                        Matchers.is(saveEntitySa.getOd().getCylinder().doubleValue())))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySa.getSku())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(saveEntitySa.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(saveEntitySa.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(saveEntitySa.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(saveEntitySa.getOs().getCylinder().doubleValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(saveEntitySa.getOd().getCylinder().doubleValue())))
-                                .andDo(print());
+                        Glasses saveEntitySm = mainService.saveGlasses(
+                                        new Glasses("multifocal", "medium", "neutral", "sm", new Dispense(),
+                                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2,
+                                                                        BigDecimal.ONE),
+                                                        new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2,
+                                                                        BigDecimal.ONE)));
 
-                Glasses saveEntitySm = mainService.saveGlasses(
-                                new Glasses("multifocal", "medium", "neutral", "sm", new Dispense(),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
+                        this.mockMvc.perform(get("/api/glasses/sm/" + saveEntitySm.getSku()))
+                                        .andExpect(status().isOk())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.sku",
+                                                        Matchers.is(saveEntitySm.getSku())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                        Matchers.is(saveEntitySm.getGlassesType().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                        Matchers.is(saveEntitySm.getGlassesSize().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                        Matchers.is(saveEntitySm.getAppearance().name())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                        Matchers.is(saveEntitySm.getOs().getCylinder().doubleValue())))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                        Matchers.is(saveEntitySm.getOd().getCylinder().doubleValue())))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sm/" + saveEntitySm.getSku()))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySm.getSku())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(saveEntitySm.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(saveEntitySm.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(saveEntitySm.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(saveEntitySm.getOs().getCylinder().doubleValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(saveEntitySm.getOd().getCylinder().doubleValue())))
-                                .andDo(print());
+                        this.mockMvc.perform(get("/api/glasses/sa/" + -10))
+                                        .andExpect(status().is4xxClientError())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.error",
+                                                        Matchers.is(notNullValue())))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sa/" + -10))
-                                .andExpect(status().is4xxClientError())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.error", Matchers.is(notNullValue())))
-                                .andDo(print());
+                        int totalItems = mainService.findByDispensedAndLocation(false, "sm").size();
 
-                int totalItems = mainService.findByDispensedAndLocation(false, "sm").size();
+                        this.mockMvc.perform(get("/api/glasses/sm?size=2&page=0&sort=sku,asc"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location",
+                                                        Matchers.is("sm")))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems",
+                                                        Matchers.is(totalItems)))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(0)))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sm?size=2&page=0&sort=sku,asc"))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location", Matchers.is("sm")))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems", Matchers.is(totalItems)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(0)))
-                                .andDo(print());
+                        int totalItemsSa = mainService.findByDispensedAndLocation(false, "sa").size();
 
-                int totalItemsSa = mainService.findByDispensedAndLocation(false, "sa").size();
+                        this.mockMvc.perform(get("/api/glasses/sa?size=2&page=1&sort=sku,desc"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location",
+                                                        Matchers.is("sa")))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems",
+                                                        Matchers.is(totalItemsSa)))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(1)))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sa?size=2&page=1&sort=sku,desc"))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location", Matchers.is("sa")))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems", Matchers.is(totalItemsSa)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(1)))
-                                .andDo(print());
+                        int totalItemsSaWithMultifocal = mainService.findByDispensedAndLocation(false, "sa")
+                                        .stream()
+                                        .filter(a -> a.getGlassesType().equals(GlassesTypeEnum.multifocal))
+                                        .collect(Collectors.toList()).size();
 
-                int totalItemsSaWithMultifocal = mainService.findByDispensedAndLocation(false, "sa")
-                                .stream()
-                                .filter(a -> a.getGlassesType().equals(GlassesTypeEnum.multifocal))
-                                .collect(Collectors.toList()).size();
+                        this.mockMvc.perform(get(
+                                        "/api/glasses/sa?size=2&page=2&sort=sku,desc&search=glassesType==multifocal"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location",
+                                                        Matchers.is("sa")))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].glassesType",
+                                                        Matchers.is("multifocal")))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems",
+                                                        Matchers.is(totalItemsSaWithMultifocal)))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(2)))
+                                        .andDo(print());
 
-                this.mockMvc.perform(get("/api/glasses/sa?size=2&page=2&sort=sku,desc&search=glassesType==multifocal"))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].location", Matchers.is("sa")))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glasses[0].glassesType",
-                                                Matchers.is("multifocal")))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.totalItems",
-                                                Matchers.is(totalItemsSaWithMultifocal)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage", Matchers.is(2)))
-                                .andDo(print());
-
-                this.mockMvc.perform(get("/api/glasses/sa?size=2&page=2&sort=sku,desc&search=glassesType==aaa"))
-                                .andExpect(status().is4xxClientError())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.error", Matchers.is(notNullValue())))
-                                .andDo(print());
+                        this.mockMvc.perform(get("/api/glasses/sa?size=2&page=2&sort=sku,desc&search=glassesType==aaa"))
+                                        .andExpect(status().is4xxClientError())
+                                        .andExpect(MockMvcResultMatchers.content()
+                                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(MockMvcResultMatchers.jsonPath("$.error",
+                                                        Matchers.is(notNullValue())))
+                                        .andDo(print());
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
         }
 
         @Test

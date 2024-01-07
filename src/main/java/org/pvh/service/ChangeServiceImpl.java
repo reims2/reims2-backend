@@ -23,17 +23,17 @@ public class ChangeServiceImpl implements ChangeService{
 	}
 
 	public String getHashValue(String location) {
-        if(!changeValueRepository.findByLocation(location).isPresent()){
+        if(changeValueRepository.findByLocation(location).get().isEmpty()){
             String hashValue = calcHash();
             logger.info("HashValue is null, new hash value is calculated: " + hashValue + " for location: " + location);
             changeValueRepository.save(new ChangeValue(hashValue,location));
             return hashValue;
         }
-        return changeValueRepository.findAll().get(0).getHashValue();
+        return changeValueRepository.findByLocation(location).get().get(0).getHashValue();
     }
 
     public void setNewHashValue(String location) {
-        ChangeValue changeValue = changeValueRepository.findByLocation(location).get();
+        ChangeValue changeValue = changeValueRepository.findByLocation(location).get().get(0);
         if (changeValue != null) {
             changeValueRepository.delete(changeValue);
             logger.info("ChangeValue at location " + location + " has been deleted");
