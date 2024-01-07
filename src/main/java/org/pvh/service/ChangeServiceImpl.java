@@ -22,19 +22,25 @@ public class ChangeServiceImpl implements ChangeService{
 		this.changeValueRepository = changeValueRepository;
 	}
 
-	public String getHashValue() {
-        if(changeValueRepository.findAll().size() == 0){
-            System.out.println("HashValue is null");
-            changeValueRepository.save(new ChangeValue(calcHash()));
-            return calcHash();
+	public String getHashValue(String location) {
+        if(!changeValueRepository.findByLocation(location).isPresent()){
+            String hashValue = calcHash();
+            logger.info("HashValue is null, new hash value is calculated: " + hashValue + " for location: " + location);
+            changeValueRepository.save(new ChangeValue(hashValue,location));
+            return hashValue;
         }
         return changeValueRepository.findAll().get(0).getHashValue();
     }
 
-    public void setNewHashValue() {
-        // Only one record in database
-        changeValueRepository.deleteAll();
-        changeValueRepository.save(new ChangeValue(calcHash()));
+    public void setNewHashValue(String location) {
+        ChangeValue changeValue = changeValueRepository.findByLocation(location).get();
+        if (changeValue != null) {
+            changeValueRepository.delete(changeValue);
+            logger.info("ChangeValue at location " + location + " has been deleted");
+        } else {
+            logger.info("No ChangeValue found at location " + location);
+        }
+        changeValueRepository.save(new ChangeValue(calcHash(),location));
         logger.info("A new hash value has been calculated");
     }
 

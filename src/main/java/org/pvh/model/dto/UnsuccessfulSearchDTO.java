@@ -2,8 +2,7 @@ package org.pvh.model.dto;
 
 import java.util.Date;
 
-import org.pvh.model.enums.AppearanceEnum;
-import org.pvh.model.enums.GlassesSizeEnum;
+import org.pvh.model.enums.BalLensEnum;
 import org.pvh.model.enums.GlassesTypeEnum;
 import org.pvh.model.validator.IEnumValidator;
 
@@ -12,13 +11,10 @@ import jakarta.validation.constraints.Pattern;
 public class UnsuccessfulSearchDTO {
     @IEnumValidator(enumClass = GlassesTypeEnum.class)
     private String glassesType;
-    @IEnumValidator(enumClass = GlassesSizeEnum.class)
-    private String glassesSize;
-    @IEnumValidator(enumClass = AppearanceEnum.class)
-    private String appearance;
     @Pattern(regexp = "sm|sa")
     private String location;
-
+    private String balLens;
+    private Boolean increaseSearchTolerance;
     private Date searchDate;
 
     private EyeDTO os;
@@ -28,34 +24,23 @@ public class UnsuccessfulSearchDTO {
 
 
     public UnsuccessfulSearchDTO(@IEnumValidator(enumClass = GlassesTypeEnum.class) String glassesType,
-            @IEnumValidator(enumClass = GlassesSizeEnum.class) String glassesSize,
-            @IEnumValidator(enumClass = AppearanceEnum.class) String appearance,
+            @IEnumValidator(enumClass = BalLensEnum.class) String balLens,
+            Boolean increaseSearchTolerance,
             @Pattern(regexp = "sm|sa") String location, Date searchDate, EyeDTO os, EyeDTO od) {
         this.glassesType = glassesType;
-        this.glassesSize = glassesSize;
-        this.appearance = appearance;
+        this.increaseSearchTolerance = increaseSearchTolerance;
+        this.balLens = balLens;
         this.location = location;
         this.searchDate = searchDate;
         this.os = os;
         this.od = od;
     }
+    
     public String getGlassesType() {
         return glassesType;
     }
     public void setGlassesType(String glassesType) {
         this.glassesType = glassesType;
-    }
-    public String getGlassesSize() {
-        return glassesSize;
-    }
-    public void setGlassesSize(String glassesSize) {
-        this.glassesSize = glassesSize;
-    }
-    public String getAppearance() {
-        return appearance;
-    }
-    public void setAppearance(String appearance) {
-        this.appearance = appearance;
     }
     public String getLocation() {
         return location;
@@ -80,6 +65,22 @@ public class UnsuccessfulSearchDTO {
     }
     public void setOd(EyeDTO od) {
         this.od = od;
+    }
+
+    public String getBalLens() {
+        return balLens;
+    }
+
+    public void setBalLens(String balLens) {
+        this.balLens = balLens;
+    }
+
+    public Boolean getIncreaseSearchTolerance() {
+        return increaseSearchTolerance;
+    }
+
+    public void setIncreaseSearchTolerance(Boolean increaseSearchTolerance) {
+        this.increaseSearchTolerance = increaseSearchTolerance;
     }
 
     

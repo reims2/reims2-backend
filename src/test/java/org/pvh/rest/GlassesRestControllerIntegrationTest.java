@@ -52,18 +52,20 @@ public class GlassesRestControllerIntegrationTest {
         @Autowired
         private ObjectMapper objectMapper;
 
-        private ChangeValue callChangeValueAndReturnHash() throws Exception {
+        private ChangeValue callChangeValueAndReturnHash(String location) throws Exception {
 
-                MvcResult changeValue = this.mockMvc.perform(get("/api/glasses/changes")).andReturn();
+                MvcResult changeValue = this.mockMvc.perform(get(String.format("/api/glasses/%s/changes", location)))
+                                .andReturn();
                 ChangeValue cv = objectMapper.readValue(changeValue.getResponse().getContentAsByteArray(),
                                 ChangeValue.class);
 
                 return cv;
         }
 
-        private boolean isChangeValueEqualNewChangeValue(ChangeValue cv) throws Exception {
+        private boolean isChangeValueEqualNewChangeValue(ChangeValue cv, String location) throws Exception {
 
-                MvcResult changeValueMvc = this.mockMvc.perform(get("/api/glasses/changes")).andReturn();
+                MvcResult changeValueMvc = this.mockMvc.perform(get(String.format("/api/glasses/%s/changes", location)))
+                                .andReturn();
                 ChangeValue changeValue2 = objectMapper.readValue(changeValueMvc.getResponse().getContentAsByteArray(),
                                 ChangeValue.class);
 
@@ -73,6 +75,143 @@ public class GlassesRestControllerIntegrationTest {
                         return false;
                 }
 
+        }
+
+        @Test
+        public void givenGlasses_Dispense_And_Undispense()
+                        throws Exception {
+
+                Glasses saveEntitySa = mainService.saveGlasses(
+                                new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
+                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
+                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
+
+                ChangeValue cv = callChangeValueAndReturnHash("sa");
+                // Get create Glasses
+                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
+                                .andExpect(status().isOk())
+                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySa.getSku())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                Matchers.is(saveEntitySa.getGlassesType().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                Matchers.is(saveEntitySa.getGlassesSize().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.dispensed", Matchers.is(false)))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                Matchers.is(saveEntitySa.getAppearance().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                Matchers.is(saveEntitySa.getOs().getCylinder().doubleValue())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                Matchers.is(saveEntitySa.getOd().getCylinder().doubleValue())))
+                                .andDo(print());
+
+                // Dispense created Glasses for first time
+                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa.getSku()))
+                                .andExpect(status().isOk())
+                                .andDo(print());
+
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                // Dispense created Glasses for second time --> Sku not valid anymore
+                cv = callChangeValueAndReturnHash("sa");
+                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa.getSku()))
+                                .andExpect(status().is4xxClientError())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+                // Dispense non existing Glasses
+                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + -1))
+                                .andExpect(status().isNotFound())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                // try to get created Glasses
+                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
+                                .andExpect(status().isNotFound())
+                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                                .andDo(print());
+
+                // check if created Glasses is dispensed
+                this.mockMvc.perform(get("/api/glasses/dispensed/sa"))
+                                .andExpect(status().isOk())
+                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].location", Matchers.is("sa")))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].glassesType",
+                                                Matchers.is(saveEntitySa.getGlassesType().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].glassesSize",
+                                                Matchers.is(saveEntitySa.getGlassesSize().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].dispensed", Matchers.is(true)))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].appearance",
+                                                Matchers.is(saveEntitySa.getAppearance().name())))
+                                .andExpect(
+                                                MockMvcResultMatchers.jsonPath("$.[0].os.cylinder",
+                                                                Matchers.is(saveEntitySa.getOs().getCylinder()
+                                                                                .doubleValue())))
+                                .andExpect(
+                                                MockMvcResultMatchers.jsonPath("$.[0].od.cylinder",
+                                                                Matchers.is(saveEntitySa.getOd().getCylinder()
+                                                                                .doubleValue())))
+                                .andDo(print());
+
+                Glasses saveEntitySa2 = mainService.saveGlasses(
+                                new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
+                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
+                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
+
+                cv = callChangeValueAndReturnHash("sa");
+                // Try to Undispense firstly created glass -> not possible because of secondly
+                // created glass
+                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa.getId()))
+                                .andExpect(status().isBadRequest())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                // dispense secondly created glass
+                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa2.getSku()))
+                                .andExpect(status().isOk())
+                                .andDo(print());
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                // undispense secondly created glass
+                cv = callChangeValueAndReturnHash("sa");
+                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa2.getId()))
+                                .andExpect(status().isOk())
+                                .andDo(print());
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                // undispense secondly created glass second time
+                cv = callChangeValueAndReturnHash("sa");
+                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa2.getId()))
+                                .andExpect(status().isNoContent())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+                // undispense empty glasss
+                this.mockMvc.perform(put("/api/glasses/undispense/fsdg"))
+                                .andExpect(status().isBadRequest())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+                // undispense wrong id glasss
+                saveEntitySa.setId(-1L);
+                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa.getId()))
+                                .andExpect(status().isBadRequest())
+                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sa"));
+
+                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa2.getSku()))
+                                .andExpect(status().isOk())
+                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySa2.getSku())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
+                                                Matchers.is(saveEntitySa2.getGlassesType().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
+                                                Matchers.is(saveEntitySa2.getGlassesSize().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.dispensed", Matchers.is(false)))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
+                                                Matchers.is(saveEntitySa2.getAppearance().name())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
+                                                Matchers.is(saveEntitySa2.getOs().getCylinder().doubleValue())))
+                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
+                                                Matchers.is(saveEntitySa2.getOd().getCylinder().doubleValue())))
+                                .andDo(print());
         }
 
         @Test
@@ -86,7 +225,7 @@ public class GlassesRestControllerIntegrationTest {
                                 new Dispense(), new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
                                 new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
 
-                ChangeValue cv = callChangeValueAndReturnHash();
+                ChangeValue cv = callChangeValueAndReturnHash(glasses.getLocation());
 
                 this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
                                 objectMapper.writeValueAsBytes(
@@ -105,9 +244,9 @@ public class GlassesRestControllerIntegrationTest {
                                                 Matchers.is(glasses.getOd().getCylinder().intValue())))
                                 .andDo(print());
 
-                assertFalse(isChangeValueEqualNewChangeValue(cv));
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash();
+                cv = callChangeValueAndReturnHash(glasses.getLocation());
                 this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
                                 objectMapper.writeValueAsBytes(
                                                 GlassesMapperImpl.getInstance().glassesToGlassesRequestDTO(glasses))))
@@ -125,21 +264,21 @@ public class GlassesRestControllerIntegrationTest {
                                                 Matchers.is(glasses.getOd().getCylinder().intValue())))
                                 .andDo(print());
 
-                assertFalse(isChangeValueEqualNewChangeValue(cv));
+                assertFalse(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
 
-                cv = callChangeValueAndReturnHash();
+                cv = callChangeValueAndReturnHash(glasses.getLocation());
 
                 this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
                                 objectMapper.writeValueAsBytes(GlassesMapperImpl.getInstance()
                                                 .glassesToGlassesRequestDTO(failGlasses))))
                                 .andExpect(status().is4xxClientError())
                                 .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));
+                assertTrue(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
 
                 this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().is4xxClientError())
                                 .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));
+                assertTrue(isChangeValueEqualNewChangeValue(cv, glasses.getLocation()));
         }
 
         @Test
@@ -246,17 +385,17 @@ public class GlassesRestControllerIntegrationTest {
                                                 new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
                                                 new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
 
-                ChangeValue cv = callChangeValueAndReturnHash();
+                ChangeValue cv = callChangeValueAndReturnHash("sm");
                 this.mockMvc.perform(delete("/api/glasses/sm/" + saveEntitySa.getSku()))
                                 .andExpect(status().isNoContent())
                                 .andDo(print());
-                assertFalse(isChangeValueEqualNewChangeValue(cv));
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash();
+                cv = callChangeValueAndReturnHash("sm");
                 this.mockMvc.perform(delete("/api/glasses/sm/-1"))
                                 .andExpect(status().is4xxClientError())
                                 .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sm"));
         }
 
         @Test
@@ -267,7 +406,7 @@ public class GlassesRestControllerIntegrationTest {
                                 new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
                                 new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE));
 
-                ChangeValue cv = callChangeValueAndReturnHash();
+                ChangeValue cv = callChangeValueAndReturnHash("sm");
                 this.mockMvc.perform(post("/api/glasses").contentType(MediaType.APPLICATION_JSON).content(
                                 objectMapper.writeValueAsBytes(GlassesMapperImpl.getInstance()
                                                 .glassesToGlassesRequestDTO(glasses))))
@@ -276,9 +415,9 @@ public class GlassesRestControllerIntegrationTest {
                                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                                 .andDo(print())
                                 .andReturn();
-                assertFalse(isChangeValueEqualNewChangeValue(cv));
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash();
+                cv = callChangeValueAndReturnHash("sm");
                 Glasses glassesToUpdate = new Glasses("multifocal", "medium", "feminine", "sm", new Dispense(),
                                 new Eye(BigDecimal.valueOf(2), BigDecimal.valueOf(-5), 3, BigDecimal.valueOf(2)),
                                 new Eye(BigDecimal.valueOf(2), BigDecimal.valueOf(-5), 3, BigDecimal.valueOf(2)));
@@ -302,9 +441,9 @@ public class GlassesRestControllerIntegrationTest {
                                 .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
                                                 Matchers.is(glassesToUpdate.getOd().getCylinder().intValue())))
                                 .andDo(print());
-                assertFalse(isChangeValueEqualNewChangeValue(cv));
+                assertFalse(isChangeValueEqualNewChangeValue(cv, "sm"));
 
-                cv = callChangeValueAndReturnHash();
+                cv = callChangeValueAndReturnHash("sm");
                 GlassesRequestDTO failGlassesToUpdate = new GlassesRequestDTO("multifocal", "medium", "test", "sm",
                                 new EyeDTO(BigDecimal.valueOf(2), BigDecimal.valueOf(-5), 3, BigDecimal.valueOf(2)),
                                 new EyeDTO(BigDecimal.valueOf(2), BigDecimal.valueOf(-5), 3, BigDecimal.valueOf(2)));
@@ -317,144 +456,7 @@ public class GlassesRestControllerIntegrationTest {
                                 .andExpect(MockMvcResultMatchers.content()
                                                 .contentType(MediaType.APPLICATION_PROBLEM_JSON))
                                 .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));
-        }
-
-        @Test
-        public void givenGlasses_Dispense_And_Undispense()
-                        throws Exception {
-
-                Glasses saveEntitySa = mainService.saveGlasses(
-                                new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
-                
-                ChangeValue cv = callChangeValueAndReturnHash();
-                // Get create Glasses
-                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySa.getSku())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(saveEntitySa.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(saveEntitySa.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.dispensed", Matchers.is(false)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(saveEntitySa.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(saveEntitySa.getOs().getCylinder().doubleValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(saveEntitySa.getOd().getCylinder().doubleValue())))
-                                .andDo(print());
-
-                // Dispense created Glasses for first time
-                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa.getSku()))
-                                .andExpect(status().isOk())
-                                .andDo(print());
-
-                assertFalse(isChangeValueEqualNewChangeValue(cv));   
-
-                // Dispense created Glasses for second time --> Sku not valid anymore
-                cv = callChangeValueAndReturnHash();
-                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa.getSku()))
-                                .andExpect(status().is4xxClientError())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));                     
-                // Dispense non existing Glasses
-                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + -1))
-                                .andExpect(status().isNotFound())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));    
-
-                // try to get created Glasses
-                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa.getSku()))
-                                .andExpect(status().isNotFound())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andDo(print());
-
-                // check if created Glasses is dispensed
-                this.mockMvc.perform(get("/api/glasses/dispensed/sa"))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].location", Matchers.is("sa")))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].glassesType",
-                                                Matchers.is(saveEntitySa.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].glassesSize",
-                                                Matchers.is(saveEntitySa.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].dispensed", Matchers.is(true)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].appearance",
-                                                Matchers.is(saveEntitySa.getAppearance().name())))
-                                .andExpect(
-                                                MockMvcResultMatchers.jsonPath("$.[0].os.cylinder",
-                                                                Matchers.is(saveEntitySa.getOs().getCylinder()
-                                                                                .doubleValue())))
-                                .andExpect(
-                                                MockMvcResultMatchers.jsonPath("$.[0].od.cylinder",
-                                                                Matchers.is(saveEntitySa.getOd().getCylinder()
-                                                                                .doubleValue())))
-                                .andDo(print());
-
-                Glasses saveEntitySa2 = mainService.saveGlasses(
-                                new Glasses("multifocal", "medium", "neutral", "sa", new Dispense(),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE),
-                                                new Eye(BigDecimal.ONE, BigDecimal.valueOf(-2), 2, BigDecimal.ONE)));
-
-                cv = callChangeValueAndReturnHash();
-                // Try to Undispense firstly created glass -> not possible because of secondly
-                // created glass
-                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa.getId()))
-                                .andExpect(status().isBadRequest())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));    
-
-                // dispense secondly created glass
-                this.mockMvc.perform(put("/api/glasses/dispense/sa/" + saveEntitySa2.getSku()))
-                                .andExpect(status().isOk())
-                                .andDo(print());
-                assertFalse(isChangeValueEqualNewChangeValue(cv));    
-
-                // undispense secondly created glass
-                cv = callChangeValueAndReturnHash();
-                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa2.getId()))
-                                .andExpect(status().isOk())
-                                .andDo(print());
-                assertFalse(isChangeValueEqualNewChangeValue(cv)); 
-
-                // undispense secondly created glass second time
-                cv = callChangeValueAndReturnHash();
-                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa2.getId()))
-                                .andExpect(status().isNoContent())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv)); 
-                // undispense empty glasss
-                this.mockMvc.perform(put("/api/glasses/undispense/fsdg"))
-                                .andExpect(status().isBadRequest())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));                      
-                // undispense wrong id glasss
-                saveEntitySa.setId(-1L);
-                this.mockMvc.perform(put("/api/glasses/undispense/" + saveEntitySa.getId()))
-                                .andExpect(status().isBadRequest())
-                                .andDo(print());
-                assertTrue(isChangeValueEqualNewChangeValue(cv));     
-
-                this.mockMvc.perform(get("/api/glasses/sa/" + saveEntitySa2.getSku()))
-                                .andExpect(status().isOk())
-                                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.sku", Matchers.is(saveEntitySa2.getSku())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesType",
-                                                Matchers.is(saveEntitySa2.getGlassesType().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.glassesSize",
-                                                Matchers.is(saveEntitySa2.getGlassesSize().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.dispensed", Matchers.is(false)))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.appearance",
-                                                Matchers.is(saveEntitySa2.getAppearance().name())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.os.cylinder",
-                                                Matchers.is(saveEntitySa2.getOs().getCylinder().doubleValue())))
-                                .andExpect(MockMvcResultMatchers.jsonPath("$.od.cylinder",
-                                                Matchers.is(saveEntitySa2.getOd().getCylinder().doubleValue())))
-                                .andDo(print());
+                assertTrue(isChangeValueEqualNewChangeValue(cv, "sm"));
         }
 
         @Test

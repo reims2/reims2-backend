@@ -188,10 +188,10 @@ public class GlassesRestController {
 
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @GetMapping(path = "/changes", produces = "application/json")
-    public ChangeValueDTO getGlassesChange() {
+    @GetMapping(path = "/{location}/changes", produces = "application/json")
+    public ChangeValueDTO getGlassesChange(@PathVariable("location") String location) {
 
-        String currentHashValue = changeService.getHashValue();
+        String currentHashValue = changeService.getHashValue(location);
         ChangeValueDTO currentHashValueDTO = new ChangeValueDTO(currentHashValue);
         return currentHashValueDTO;
 
@@ -222,7 +222,7 @@ public class GlassesRestController {
         } finally {
             lock.unlock();
         }
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(glassesResponse.getLocation());
         logger.info("Added new glasses in {}. SKU is {}.", glassesResponse.getLocation(), glassesResponse.getSku());
         return new ResponseEntity<>(GlassesMapperImpl.getInstance().glassesToGlassesResponseDTO(glassesResponse), HttpStatus.CREATED);
     }
@@ -241,7 +241,7 @@ public class GlassesRestController {
         }
         Glasses glasses1 = GlassesMapperImpl.getInstance().updateGlassesFromGlassesRequestDTO(glasses, currentGlasses.get());
         logger.info("Edited glasses with SKU {} (in {})", sku, location);
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(location);
         return new ResponseEntity<>(
                 GlassesMapperImpl.getInstance().glassesToGlassesResponseDTO(this.mainService.saveGlassesAfterEdit(glasses1)),
                 HttpStatus.OK);
@@ -276,7 +276,7 @@ public class GlassesRestController {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(location);
         logger.info("Dispensed glasses with SKU {} (in {}) with reason {}", sku, location,
                 currentGlasses.get().getDispense().getDispenseReason());
         return new ResponseEntity<>(HttpStatus.OK);
@@ -309,7 +309,7 @@ public class GlassesRestController {
         currentGlasses.get().getDispense().setPreviousSku(null);
 
         this.mainService.saveGlassesAfterDispense(currentGlasses.get());
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(currentGlasses.get().getLocation());
         logger.info("Undispensed glasses with SKU {}", currentGlasses.get().getSku());
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -323,14 +323,14 @@ public class GlassesRestController {
         }
         this.mainService.deleteGlasses(glasses.get());
         logger.info("Completely deleted glasses with SKU {} (in {})", sku, location);
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(location);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Weiterbauen POST und GET/ Delete Endpoint
+    
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @PostMapping(path = "/unsuccessfulSearch", produces = "application/json")
-    public ResponseEntity<Void> addUnsuccessfulSearch(@RequestBody @Valid UnsuccessfulSearchDTO unsuccessfulSearchDTO, UriComponentsBuilder ucBuilder) {
+    @PostMapping(path = "/{location}/unsuccessfulSearch", produces = "application/json")
+    public ResponseEntity<Void> addUnsuccessfulSearch(@PathVariable("location") String location, @RequestBody @Valid UnsuccessfulSearchDTO unsuccessfulSearchDTO, UriComponentsBuilder ucBuilder) {
         UnsuccessfulSearch searchResponse;
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -342,7 +342,7 @@ public class GlassesRestController {
         } catch (RuntimeException e) {
             throw new PVHException("Something bad happened while adding unsuccessful search.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        changeService.setNewHashValue();
+        changeService.setNewHashValue(location);
         logger.info("Added new unsuccessful search with following Attributes: {}", searchResponse.toString());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

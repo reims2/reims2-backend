@@ -3,6 +3,8 @@ package org.pvh.model.entity;
 import java.util.Date;
 
 import org.pvh.model.enums.AppearanceEnum;
+import org.pvh.model.enums.BalLensEnum;
+import org.pvh.model.enums.DispenseReasonEnum;
 import org.pvh.model.enums.GlassesSizeEnum;
 import org.pvh.model.enums.GlassesTypeEnum;
 
@@ -24,12 +26,6 @@ public class UnsuccessfulSearch extends BaseEntity {
     @Column(name = "glasses_type")
     private String glassesType;
 
-    @Column(name = "glasses_size")
-    private String glassesSize;
-
-    @Column(name = "appearance")
-    private String appearance;
-
     @Column(name = "location")
     @Pattern(regexp = "sm|sa")
     private String location;
@@ -39,6 +35,11 @@ public class UnsuccessfulSearch extends BaseEntity {
     @Column(name = "search_date")
     private Date searchDate;
 
+    @Column(name = "balLens")
+    private String balLens;
+
+    @Column(name = "increase_search_tolerance")
+    private Boolean increaseSearchTolerance;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "OS_ID")
@@ -47,6 +48,16 @@ public class UnsuccessfulSearch extends BaseEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "OD_ID")
     private Eye od;
+
+
+
+    public BalLensEnum getBalLens() {
+        return balLens != null ? Enum.valueOf(BalLensEnum.class, balLens) : null;
+    }
+
+    public void setBalLens(BalLensEnum balLens) {
+        this.balLens = balLens != null ? balLens.name() : null;
+    }
 
     public Eye getOs() {
         return os;
@@ -72,22 +83,6 @@ public class UnsuccessfulSearch extends BaseEntity {
         this.location = location;
     }
 
-    public GlassesSizeEnum getGlassesSize() {
-        return Enum.valueOf(GlassesSizeEnum.class, glassesSize);
-    }
-
-    public void setGlassesSize(GlassesSizeEnum glassesSize) {
-        this.glassesSize = glassesSize.name();
-    }
-
-    public AppearanceEnum getAppearance() {
-        return Enum.valueOf(AppearanceEnum.class, appearance);
-    }
-
-    public void setAppearance(AppearanceEnum appearance) {
-        this.appearance = appearance.name();
-    }
-
     public GlassesTypeEnum getGlassesType() {
         return Enum.valueOf(GlassesTypeEnum.class, glassesType);
     }
@@ -100,13 +95,6 @@ public class UnsuccessfulSearch extends BaseEntity {
         this.glassesType = glassesType;
     }
 
-    public void setGlassesSize(String glassesSize) {
-        this.glassesSize = glassesSize;
-    }
-
-    public void setAppearance(String appearance) {
-        this.appearance = appearance;
-    }
 
     public Date getSearchDate() {
         return searchDate;
@@ -115,12 +103,19 @@ public class UnsuccessfulSearch extends BaseEntity {
     public void setSearchDate(Date searchDate) {
         this.searchDate = searchDate;
     }
+    public Boolean getIncreaseSearchTolerance() {
+        return increaseSearchTolerance;
+    }
+
+    public void setIncreaseSearchTolerance(Boolean increaseSearchTolerance) {
+        this.increaseSearchTolerance = increaseSearchTolerance;
+    }
 
     @Override
     public String toString() {
-        return "UnsuccessfulSearch [glassesType=" + glassesType + ", glassesSize=" + glassesSize + ", appearance="
-                + appearance + ", location=" + location + ", searchDate=" + searchDate + ", os=" + os + ", od=" + od
-                + "]";
+        return "UnsuccessfulSearch [glassesType=" + glassesType + ", location=" + location + ", searchDate="
+                + searchDate + ", balLens=" + balLens + ", increaseSearchTolerance=" + increaseSearchTolerance + ", os="
+                + os + ", od=" + od + "]";
     }
 
     

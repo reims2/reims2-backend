@@ -1,22 +1,10 @@
 package org.pvh.model.mapper;
 
-import org.pvh.model.dto.EyeDTO;
-import org.pvh.model.dto.GlassesRequestDTO;
-import org.pvh.model.dto.GlassesResponseDTO;
-import org.pvh.model.dto.GlassesResponseDTO.DispenseResponseDto;
 import org.pvh.model.dto.UnsuccessfulSearchDTO;
-import org.pvh.model.entity.Dispense;
-import org.pvh.model.entity.Eye;
-import org.pvh.model.entity.Glasses;
 import org.pvh.model.entity.UnsuccessfulSearch;
-import org.pvh.model.enums.AppearanceEnum;
-import org.pvh.model.enums.DispenseReasonEnum;
-import org.pvh.model.enums.GlassesSizeEnum;
+import org.pvh.model.enums.BalLensEnum;
 import org.pvh.model.enums.GlassesTypeEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.math.BigDecimal;
-import javax.annotation.processing.Generated;
 
 @Component
 public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
@@ -42,8 +30,8 @@ public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
 
         UnsuccessfulSearchDTO unsuccessfulSearchDTO = new UnsuccessfulSearchDTO(
                 unsuccessfulSearch.getGlassesType().name(),
-                unsuccessfulSearch.getGlassesSize().name(),
-                unsuccessfulSearch.getAppearance().name(),
+                unsuccessfulSearch.getBalLens().name(),
+                unsuccessfulSearch.getIncreaseSearchTolerance(),
                 unsuccessfulSearch.getLocation(),
                 unsuccessfulSearch.getSearchDate(),
                 GlassesMapperImpl.getInstance().eyeToEyeDTO(unsuccessfulSearch.getOs()),
@@ -62,14 +50,11 @@ public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
         unsuccessfulSearch.setOd(GlassesMapperImpl.getInstance().eyeDTOToEye(unsuccessfulSearchDTO.getOd()));
         unsuccessfulSearch.setSearchDate(unsuccessfulSearchDTO.getSearchDate());
         unsuccessfulSearch.setLocation(unsuccessfulSearchDTO.getLocation());
-        if (unsuccessfulSearchDTO.getGlassesSize() == null)
-            return null;
-        if (unsuccessfulSearchDTO.getAppearance() == null)
-            return null;
         if (unsuccessfulSearchDTO.getGlassesType() == null)
             return null;
-        unsuccessfulSearch.setGlassesSize(Enum.valueOf(GlassesSizeEnum.class, unsuccessfulSearchDTO.getGlassesSize()));
-        unsuccessfulSearch.setAppearance(Enum.valueOf(AppearanceEnum.class, unsuccessfulSearchDTO.getAppearance()));
+        if (unsuccessfulSearchDTO.getBalLens() == null)
+            return null;
+        unsuccessfulSearch.setBalLens(Enum.valueOf(BalLensEnum.class, unsuccessfulSearchDTO.getBalLens()));
         unsuccessfulSearch.setGlassesType(Enum.valueOf(GlassesTypeEnum.class, unsuccessfulSearchDTO.getGlassesType()));
 
 
