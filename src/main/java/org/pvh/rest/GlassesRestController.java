@@ -342,7 +342,6 @@ public class GlassesRestController {
         } catch (RuntimeException e) {
             throw new PVHException("Something bad happened while adding unsuccessful search.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        changeService.setNewHashValue(location);
         logger.info("Added new unsuccessful search with following Attributes: {}", searchResponse.toString());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
