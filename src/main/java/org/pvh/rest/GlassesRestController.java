@@ -337,7 +337,7 @@ public class GlassesRestController {
             if (unsuccessfulSearchDTO == null) {
                 return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
             }
-            UnsuccessfulSearch search = UnsuccessfulSearchMapperImpl.getInstance().unsuccessfulSearchDTOToUnsuccessfulSearch(unsuccessfulSearchDTO);
+            UnsuccessfulSearch search = UnsuccessfulSearchMapperImpl.getInstance().unsuccessfulSearchDTOToUnsuccessfulSearch(unsuccessfulSearchDTO,location);
             searchResponse = this.mainService.saveUnsuccessfulSearch(search);
         } catch (RuntimeException e) {
             throw new PVHException("Something bad happened while adding unsuccessful search.", HttpStatus.INTERNAL_SERVER_ERROR);

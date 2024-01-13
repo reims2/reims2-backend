@@ -32,7 +32,6 @@ public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
                 unsuccessfulSearch.getGlassesType().name(),
                 unsuccessfulSearch.getBalLens().name(),
                 unsuccessfulSearch.getIncreaseSearchTolerance(),
-                unsuccessfulSearch.getLocation(),
                 unsuccessfulSearch.getSearchDate(),
                 GlassesMapperImpl.getInstance().eyeToEyeDTO(unsuccessfulSearch.getOs()),
                 GlassesMapperImpl.getInstance().eyeToEyeDTO(unsuccessfulSearch.getOd()));
@@ -40,7 +39,7 @@ public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
         return unsuccessfulSearchDTO;}
 
     @Override
-    public UnsuccessfulSearch unsuccessfulSearchDTOToUnsuccessfulSearch(UnsuccessfulSearchDTO unsuccessfulSearchDTO) {
+    public UnsuccessfulSearch unsuccessfulSearchDTOToUnsuccessfulSearch(UnsuccessfulSearchDTO unsuccessfulSearchDTO, String location) {
         if (unsuccessfulSearchDTO == null) {
             return null;
         }
@@ -49,7 +48,7 @@ public class UnsuccessfulSearchMapperImpl implements UnsuccessfulSearchMapper {
         unsuccessfulSearch.setOs(GlassesMapperImpl.getInstance().eyeDTOToEye(unsuccessfulSearchDTO.getOs()));
         unsuccessfulSearch.setOd(GlassesMapperImpl.getInstance().eyeDTOToEye(unsuccessfulSearchDTO.getOd()));
         unsuccessfulSearch.setSearchDate(unsuccessfulSearchDTO.getSearchDate());
-        unsuccessfulSearch.setLocation(unsuccessfulSearchDTO.getLocation());
+        unsuccessfulSearch.setLocation(location);
         if (unsuccessfulSearchDTO.getGlassesType() == null)
             return null;
         if (unsuccessfulSearchDTO.getBalLens() == null)

@@ -11,8 +11,6 @@ import jakarta.validation.constraints.Pattern;
 public class UnsuccessfulSearchDTO {
     @IEnumValidator(enumClass = GlassesTypeEnum.class)
     private String glassesType;
-    @Pattern(regexp = "sm|sa")
-    private String location;
     private String balLens;
     private Boolean increaseSearchTolerance;
     private Date searchDate;
@@ -25,12 +23,10 @@ public class UnsuccessfulSearchDTO {
 
     public UnsuccessfulSearchDTO(@IEnumValidator(enumClass = GlassesTypeEnum.class) String glassesType,
             @IEnumValidator(enumClass = BalLensEnum.class) String balLens,
-            Boolean increaseSearchTolerance,
-            @Pattern(regexp = "sm|sa") String location, Date searchDate, EyeDTO os, EyeDTO od) {
+            Boolean increaseSearchTolerance, Date searchDate, EyeDTO os, EyeDTO od) {
         this.glassesType = glassesType;
         this.increaseSearchTolerance = increaseSearchTolerance;
         this.balLens = balLens;
-        this.location = location;
         this.searchDate = searchDate;
         this.os = os;
         this.od = od;
@@ -41,12 +37,6 @@ public class UnsuccessfulSearchDTO {
     }
     public void setGlassesType(String glassesType) {
         this.glassesType = glassesType;
-    }
-    public String getLocation() {
-        return location;
-    }
-    public void setLocation(String location) {
-        this.location = location;
     }
     public Date getSearchDate() {
         return searchDate;
