@@ -36,24 +36,15 @@ public class ChangeServiceImpl implements ChangeService{
         ChangeValue changeValue = changeValueRepository.findByLocation(location).get().get(0);
         if (changeValue != null) {
             changeValueRepository.delete(changeValue);
-            logger.info("ChangeValue at location " + location + " has been deleted");
+            logger.debug("ChangeValue at location " + location + " has been deleted");
         } else {
-            logger.info("No ChangeValue found at location " + location);
+            logger.debug("No ChangeValue found at location " + location);
         }
         changeValueRepository.save(new ChangeValue(calcHash(),location));
-        logger.info("A new hash value has been calculated");
+        logger.debug("A new hash value has been calculated");
     }
 
     private String calcHash() {
-        // List<Glasses> glasses = this.mainService.findAllAndNotDispensed();
-        // if (glasses.isEmpty())
-        //     throw new PVHException("Glasses not found!", HttpStatus.NOT_FOUND);
-        // StringBuilder concatenatedValues = new StringBuilder();
-        // for (Glasses glasses2 : glasses) {
-        //     concatenatedValues
-        //             .append(Hashing.sha256().hashString(glasses2.toString(), StandardCharsets.UTF_8).toString());
-        // }
-        // return Hashing.sha256().hashString(concatenatedValues, StandardCharsets.UTF_8).toString();
         return Hashing.sha256().hashString(""+Math.random(), StandardCharsets.UTF_8).toString();
     }
 

@@ -6,8 +6,6 @@ import org.pvh.model.enums.BalLensEnum;
 import org.pvh.model.enums.GlassesTypeEnum;
 import org.pvh.model.validator.IEnumValidator;
 
-import jakarta.validation.constraints.Pattern;
-
 public class UnsuccessfulSearchDTO {
     @IEnumValidator(enumClass = GlassesTypeEnum.class)
     private String glassesType;
